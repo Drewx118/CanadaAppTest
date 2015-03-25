@@ -5,8 +5,14 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.util.List;
+
 
 public class MainActivity extends ActionBarActivity {
+
+    private static final String TAG = "MainActivity";
+    private List<Fact> facts;
+    private CanadaFacts factDetails;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
