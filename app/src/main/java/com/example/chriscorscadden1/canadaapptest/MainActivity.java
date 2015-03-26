@@ -6,9 +6,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -28,13 +31,16 @@ import java.util.List;
 public class MainActivity extends ActionBarActivity {
 
     private static final String TAG = "MainActivity";
-    private List<Fact> facts;
-    private CanadaFacts factDetails;
+    //private List<Fact> facts;
+    private CanadaFacts facts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        FactFetcher fetcher = new FactFetcher();
+        fetcher.execute();
     }
 
 
@@ -60,7 +66,20 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public class FactFetcher extends AsyncTask<Void, Void, String> {
+
+
+    private void failedLoadingFacts() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainActivity.this, "Failed to load Facts. Have a look at LogCat.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+
+
+    private class FactFetcher extends AsyncTask {
         private static final String TAG = "FactFetcher";
         private static final String SERVER_URL = "https://dl.dropboxusercontent.com/u/746330/facts.json";
 
@@ -81,25 +100,21 @@ public class MainActivity extends ActionBarActivity {
                     try {
                         //Read the server response and attempt to parse it as JSON
                         Reader reader = new InputStreamReader(content);
-
                         GsonBuilder gsonBuilder = new GsonBuilder();
                         Gson gson = gsonBuilder.create();
-                        List<Fact> facts = new ArrayList<Fact>();
-                        facts = Arrays.asList(gson.fromJson(reader, Fact[].class));
+                        CanadaFacts Facts = gson.fromJson(reader, CanadaFacts.class);
                         content.close();
-
-                        handlePostsList(facts);
                     } catch (Exception ex) {
                         Log.e(TAG, "Failed to parse JSON due to: " + ex);
-                        failedLoadingPosts();
+                        failedLoadingFacts();
                     }
                 } else {
                     Log.e(TAG, "Server responded with status code: " + statusLine.getStatusCode());
-                    failedLoadingPosts();
+                    failedLoadingFacts();
                 }
             } catch(Exception ex) {
                 Log.e(TAG, "Failed to send HTTP POST request due to: " + ex);
-                failedLoadingPosts();
+                failedLoadingFacts();
             }
             return null;
         }
