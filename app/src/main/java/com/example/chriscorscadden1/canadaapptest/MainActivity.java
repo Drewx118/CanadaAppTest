@@ -1,17 +1,18 @@
 package com.example.chriscorscadden1.canadaapptest;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonParser;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -28,19 +29,20 @@ import java.util.Arrays;
 import java.util.List;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
 
     private static final String TAG = "MainActivity";
-    //private List<Fact> facts;
     private CanadaFacts facts;
+    private ListView listview;
+    private ListViewAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         FactFetcher fetcher = new FactFetcher();
         fetcher.execute();
+
     }
 
 
@@ -79,12 +81,12 @@ public class MainActivity extends ActionBarActivity {
 
 
 
-    private class FactFetcher extends AsyncTask {
+    private class FactFetcher extends AsyncTask<Void, Void, Void> {
         private static final String TAG = "FactFetcher";
         private static final String SERVER_URL = "https://dl.dropboxusercontent.com/u/746330/facts.json";
 
         @Override
-        protected Object doInBackground(Object[] params) {
+        protected Void doInBackground(Void... params) {
             try {
                 //Create an HTTP client
                 HttpClient client = new DefaultHttpClient();
@@ -102,7 +104,7 @@ public class MainActivity extends ActionBarActivity {
                         Reader reader = new InputStreamReader(content);
                         GsonBuilder gsonBuilder = new GsonBuilder();
                         Gson gson = gsonBuilder.create();
-                        CanadaFacts Facts = gson.fromJson(reader, CanadaFacts.class);
+                        facts = gson.fromJson(reader, CanadaFacts.class);
                         content.close();
                     } catch (Exception ex) {
                         Log.e(TAG, "Failed to parse JSON due to: " + ex);
@@ -117,6 +119,23 @@ public class MainActivity extends ActionBarActivity {
                 failedLoadingFacts();
             }
             return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            // Locate the listview in listview_main.xml
+            listview = (ListView) findViewById(R.id.listview);
+            // Pass the results into ListViewAdapter.java
+
+            adapter = new ListViewAdapter(MainActivity.this, facts);
+            // Set the adapter to the ListView
+            listview.setAdapter(adapter);
         }
     }
 }
