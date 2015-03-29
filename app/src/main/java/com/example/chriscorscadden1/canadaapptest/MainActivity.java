@@ -29,11 +29,8 @@ import java.util.concurrent.Executors;
 public class MainActivity extends ActionBarActivity {
 
     private static final String TAG = "MainActivity";
-    // facts is used to store the information from the JSON
     private CanadaFacts facts;
-    // listview stores the list view
     private ListView listview;
-    // adapter for the listview
     private ListViewAdapter adapter;
     //
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -41,7 +38,6 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Sets the content view of the MainActivity to activity_main.xml
         setContentView(R.layout.activity_main);
         setTitle("");
         FactFetcher fetcher = new FactFetcher();
@@ -72,9 +68,7 @@ public class MainActivity extends ActionBarActivity {
     private class FactFetcher extends AsyncTask<Void, Void, Void> {
 
         private static final String TAG = "FactFetcher";
-        // URL to download the JSON
         private static final String SERVER_URL = "https://dl.dropboxusercontent.com/u/746330/facts.json";
-        // executorService manages the threads that download the image from the internet
         private ExecutorService executorService;
 
         @Override
@@ -126,17 +120,11 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            // Locates the listview in activity_main.xml
             listview = (ListView) findViewById(R.id.listview);
-            // Removes invalid facts from facts
             facts.RemoveInvalidFacts();
-            // Sets MainActivity title to facts title
             setTitle(facts.getTitle());
-            // Pass the results into ListViewAdapter.java
             adapter = new ListViewAdapter(MainActivity.this, facts);
-            // Set the adapter to the ListView
             listview.setAdapter(adapter);
-            // Locates the swipe_refresh_layout in activity_main.xml
             swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
             // Creates setOnRefreshListener event listener for swipeRefreshLayout
             swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -149,13 +137,9 @@ public class MainActivity extends ActionBarActivity {
                             @Override
                             public void run() {
                                 executorService = Executors.newFixedThreadPool(5);
-                                // Runs ReloadJSON in a new thread
                                 executorService.submit(new ReloadJSON());
-                                // Pass the results into ListViewAdapter.java
                                 adapter = new ListViewAdapter(MainActivity.this, facts);
-                                // Set the adapter to the ListView
                                 listview.setAdapter(adapter);
-                                // turns off the refreshing notification in the view
                                 swipeRefreshLayout.setRefreshing(false);
                             }
                         }, 2000);
@@ -165,7 +149,6 @@ public class MainActivity extends ActionBarActivity {
 
         // Used to reload JSON file
         class ReloadJSON implements Runnable {
-
             @Override
             public void run() {
                 downloadJson();

@@ -12,10 +12,7 @@ public class MemoryCache {
 
     private static final String TAG = "MemoryCache";
 
-    // Last argument true for LRU ordering
     private Map<String, Bitmap> cache = Collections.synchronizedMap(new LinkedHashMap<String, Bitmap>(10, 1.5f, true));
-
-    // Current allocated size
     private long size = 0;
 
     // Max memory in bytes
@@ -60,7 +57,6 @@ public class MemoryCache {
     // Checks the current size of the memory used in the cache
     private void checkSize() {
         Log.i(TAG, "cache size=" + size + " length=" + cache.size());
-        // If memory cache size is greater than the limit we remove items till we are under the limit
         if (size > limit) {
             // Least recently accessed item will be the first one iterated
             Iterator<Entry<String, Bitmap>> iter = cache.entrySet().iterator();

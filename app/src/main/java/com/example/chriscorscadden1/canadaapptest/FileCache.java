@@ -5,7 +5,6 @@ import android.content.Context;
 
 public class FileCache {
 
-    // cacheDir stores the file directory of the downloaded image files
     private File cacheDir;
 
     // Constructor used to set cacheDir to the cache directory
