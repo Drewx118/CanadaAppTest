@@ -7,9 +7,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import android.graphics.Bitmap;
 import android.util.Log;
-/**
- * Created by chriscorscadden1 on 27/03/2015.
- */
 
 public class MemoryCache {
 
@@ -29,11 +26,13 @@ public class MemoryCache {
         setLimit(Runtime.getRuntime().maxMemory() / 4);
     }
 
-    public void setLimit(long new_limit) {
-        limit = new_limit;
-        Log.i(TAG, "MemoryCache will use up to " + limit / 1024. / 1024. + "MB");
+    // Sets the limit on the memory available to store the images
+    public void setLimit(long limit) {
+        this.limit = limit;
+        Log.i(TAG, "MemoryCache will use up to " + this.limit / 1024. / 1024. + "MB");
     }
 
+    // Returns image bitmap if it is stored in the memory cache
     public Bitmap get(String id) {
         try {
             if (!cache.containsKey(id))
@@ -45,6 +44,7 @@ public class MemoryCache {
         }
     }
 
+    // Puts bitmap into the memory cache
     public void put(String id, Bitmap bitmap) {
         try {
             if (cache.containsKey(id))
@@ -57,8 +57,10 @@ public class MemoryCache {
         }
     }
 
+    // Checks the current size of the memory used in the cache
     private void checkSize() {
         Log.i(TAG, "cache size=" + size + " length=" + cache.size());
+        // If memory cache size is greater than the limit we remove items till we are under the limit
         if (size > limit) {
             // Least recently accessed item will be the first one iterated
             Iterator<Entry<String, Bitmap>> iter = cache.entrySet().iterator();
@@ -73,6 +75,7 @@ public class MemoryCache {
         }
     }
 
+    // Clears the memory cache
     public void clear() {
         try {
             cache.clear();
@@ -82,6 +85,7 @@ public class MemoryCache {
         }
     }
 
+    // Returns the size of the bitmap in bytes
     long getSizeInBytes(Bitmap bitmap) {
         if (bitmap == null)
             return 0;

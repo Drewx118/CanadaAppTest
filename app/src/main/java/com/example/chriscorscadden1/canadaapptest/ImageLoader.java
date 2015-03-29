@@ -37,8 +37,7 @@ public class ImageLoader {
     // fileCache used to get images stored on the mobile device
     FileCache fileCache;
     // imageViews stores imageView and url of the image to be loaded
-    private Map<ImageView, String> imageViews = Collections
-            .synchronizedMap(new WeakHashMap<ImageView, String>());
+    private Map<ImageView, String> imageViews = Collections.synchronizedMap(new WeakHashMap<ImageView, String>());
     // executorService manages the threads that download the image from the internet
     ExecutorService executorService;
     // Handler to display images in UI thread
@@ -68,15 +67,18 @@ public class ImageLoader {
         executorService.submit(new PhotosLoader(p));
     }
 
-    
+    // Gets the bitmap of the images by downloading them using a HTTP client if it can't be found on the file cache
     private Bitmap getBitmap(String url) {
+        // Gets the image file in the file cache
         File f = fileCache.getFile(url);
-
+        // Resizes the bitmap file
         Bitmap b = decodeFile(f);
+
+        // Returns the bitmap if we found it in the file cache
         if (b != null)
             return b;
 
-        // Download Images from the Internet
+        // Downloads the image from the url
         try {
             Bitmap bitmap = null;
 
@@ -89,9 +91,13 @@ public class ImageLoader {
                 //Perform the request and check the status code
                 if(statusLine.getStatusCode() == 200) {
                     HttpEntity entity = response.getEntity();
+                    // Input stream from the URL
                     InputStream is = entity.getContent();
+                    // Output stream to the image file in the file cache
                     OutputStream os = new FileOutputStream(f);
+                    // Copies the data from the input stream to the image file in the file cache
                     Utils.CopyStream(is, os);
+                    // Close the input and output streams
                     os.close();
                     is.close();
                 } else {
@@ -100,10 +106,9 @@ public class ImageLoader {
             } catch(Exception ex) {
                 Log.e(TAG, "Failed to send HTTP POST request due to: " + ex);
             }
-
-
-            //conn.disconnect();
+            // Resizes the bitmap file
             bitmap = decodeFile(f);
+            // Returns the image bitmap
             return bitmap;
         } catch (Throwable ex) {
             ex.printStackTrace();
@@ -113,31 +118,29 @@ public class ImageLoader {
         }
     }
 
-    // Decodes image and scales it to reduce memory consumption
+    // Decodes image and scales it to fit the appropriate size for the app and returns the resize bitmap
     private Bitmap decodeFile(File f) {
         try {
-            // Decode image size
-            BitmapFactory.Options o = new BitmapFactory.Options();
-            o.inJustDecodeBounds = true;
-            FileInputStream stream1 = new FileInputStream(f);
-            BitmapFactory.decodeStream(stream1, null, o);
-            stream1.close();
-
-            FileInputStream stream2 = new FileInputStream(f);
-            Bitmap bitmap = BitmapFactory.decodeStream(stream2);
-            stream2.close();
+            // Creates new file input stream
+            FileInputStream stream = new FileInputStream(f);
+            // Decodes the bitmap from the stream
+            Bitmap bitmap = BitmapFactory.decodeStream(stream);
+            // Closes the stream
+            stream.close();
+            // Find the width and height of the bitmap
             int width = bitmap.getWidth();
             int height = bitmap.getHeight();
+            // The scale for the new image width
             float scaleWidth = ((float) 300) / width;
+            // The Scale for the new image height
             float scaleHeight = ((float) 300) / height;
-            // CREATE A MATRIX FOR THE MANIPULATION
+            // Create a matrix for image manipulation
             Matrix matrix = new Matrix();
-            // RESIZE THE BIT MAP
+            // Resize the bitmap
             matrix.postScale(scaleWidth, scaleHeight);
-
-            // "RECREATE" THE NEW BITMAP
+            // Recreate the bitmap
             Bitmap resizedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height,matrix, false);
-
+            // Returns the resize bitmap
             return resizedBitmap;
 
         } catch (FileNotFoundException e) {
@@ -147,20 +150,27 @@ public class ImageLoader {
         return null;
     }
 
-    // Task for the queue
+    // PhotoToLoad class that stores the data for the image we are loading into the app
     private class PhotoToLoad {
+
+        // url stores the image url
         public String url;
+        // imageView stores the image view
         public ImageView imageView;
 
-        public PhotoToLoad(String u, ImageView i) {
-            url = u;
-            imageView = i;
+        // Constructor that initialises the url and imageView
+        public PhotoToLoad(String url, ImageView imageView) {
+            this.url = url;
+            this.imageView = imageView;
         }
     }
 
+    // Photosloader class that runs in the UI thread for each item
     class PhotosLoader implements Runnable {
+        // Photo that will be loaded
         PhotoToLoad photoToLoad;
 
+        // Constructor that initialises the photo to be loaded
         PhotosLoader(PhotoToLoad photoToLoad) {
             this.photoToLoad = photoToLoad;
         }
@@ -182,6 +192,7 @@ public class ImageLoader {
         }
     }
 
+    // Determines if the imageView is being reused
     boolean imageViewReused(PhotoToLoad photoToLoad) {
         String tag = imageViews.get(photoToLoad.imageView);
         if (tag == null || !tag.equals(photoToLoad.url))
@@ -191,14 +202,18 @@ public class ImageLoader {
 
     // Used to display bitmap in the UI thread
     class BitmapDisplayer implements Runnable {
+        // bitmap stores the bitmap for the image
         Bitmap bitmap;
+        //  photoToLoad stores the data for the image we are loading
         PhotoToLoad photoToLoad;
 
-        public BitmapDisplayer(Bitmap b, PhotoToLoad p) {
-            bitmap = b;
-            photoToLoad = p;
+        // Constructor that initalises the bitmap and photoToLoad
+        public BitmapDisplayer(Bitmap bitmap, PhotoToLoad photoToLoad) {
+            this.bitmap = bitmap;
+            this.photoToLoad = photoToLoad;
         }
 
+        // Sets the imageView to the image's bitmap
         public void run() {
             if (imageViewReused(photoToLoad))
                 return;
@@ -207,6 +222,7 @@ public class ImageLoader {
         }
     }
 
+    // Clears the memory and file cache
     public void clearCache() {
         memoryCache.clear();
         fileCache.clear();

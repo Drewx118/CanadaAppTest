@@ -8,22 +8,18 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-/**
- * Created by chriscorscadden1 on 27/03/2015.
- */
 public class ListViewAdapter extends BaseAdapter {
 
     // Declare Variables
-    Context context;
-    LayoutInflater inflater;
-    CanadaFacts data;
-    ImageLoader imageLoader;
-    Fact fact = new Fact();
+    private Context context;
+    private LayoutInflater inflater;
+    private CanadaFacts data;
+    private ImageLoader imageLoader;
+    private Fact fact = new Fact();
 
     public ListViewAdapter(Context context, CanadaFacts data) {
         this.context = context;
         this.data = data;
-
         imageLoader = new ImageLoader(context);
     }
 
@@ -42,6 +38,7 @@ public class ListViewAdapter extends BaseAdapter {
         return 0;
     }
 
+    // Gets the view for each fact item
     public View getView(final int position, View convertView, ViewGroup parent) {
         // Declare Variables
         TextView title;
@@ -50,6 +47,7 @@ public class ListViewAdapter extends BaseAdapter {
 
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
+        // Sets the itemView to listview_item.xml
         View itemView = inflater.inflate(R.layout.listview_item, parent, false);
         // Get the position
         fact = data.getRows().get(position);
@@ -70,5 +68,4 @@ public class ListViewAdapter extends BaseAdapter {
             imageLoader.DisplayImage(fact.getImageHref(), img);
         return itemView;
     }
-
 }

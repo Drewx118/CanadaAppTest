@@ -1,13 +1,12 @@
 package com.example.chriscorscadden1.canadaapptest;
 
-/**
- * Created by chriscorscadden1 on 25/03/2015.
- */
-
 public class Fact {
 
+    // title stores the title for the fact
     private String title;
+    // description store the description for the fact
     private String description;
+    // imageHref stores the image URL for the fact
     private String imageHref;
 
     public Fact(){

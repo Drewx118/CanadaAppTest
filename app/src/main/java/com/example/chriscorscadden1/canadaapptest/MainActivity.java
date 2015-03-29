@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -27,13 +26,16 @@ import java.io.Reader;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-
 public class MainActivity extends ActionBarActivity {
 
     private static final String TAG = "MainActivity";
+    // facts is used to store the information from the JSON
     private CanadaFacts facts;
+    // listview stores the list view
     private ListView listview;
+    // adapter for the listview
     private ListViewAdapter adapter;
+    //
     private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
@@ -67,21 +69,12 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
-    private void failedLoadingFacts() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(MainActivity.this, "Failed to load Facts. Have a look at LogCat.", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-
-
     private class FactFetcher extends AsyncTask<Void, Void, Void> {
+
         private static final String TAG = "FactFetcher";
+        // URL to download the JSON
         private static final String SERVER_URL = "https://dl.dropboxusercontent.com/u/746330/facts.json";
+        // executorService manages the threads that download the image from the internet
         private ExecutorService executorService;
 
         @Override
@@ -90,8 +83,7 @@ public class MainActivity extends ActionBarActivity {
             return null;
         }
 
-        // Creates a HTTP client that uses post to download JSON data from SERVER_URL which we parse
-        // into a CanadaFacts object.
+        // Creates a HTTP client that is used to download the JSON data from the URL which we parse into a CanadaFacts object.
         private void downloadJson(){
             try {
 
@@ -116,15 +108,12 @@ public class MainActivity extends ActionBarActivity {
                         content.close();
                     } catch (Exception ex) {
                         Log.e(TAG, "Failed to parse JSON due to: " + ex);
-                        failedLoadingFacts();
                     }
                 } else {
                     Log.e(TAG, "Server responded with status code: " + statusLine.getStatusCode());
-                    failedLoadingFacts();
                 }
             } catch(Exception ex) {
                 Log.e(TAG, "Failed to send HTTP POST request due to: " + ex);
-                failedLoadingFacts();
                 downloadJson();
             }
         }
@@ -137,21 +126,20 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            if(facts != null) {
-                // Locates the listview in activity_main.xml
-                listview = (ListView) findViewById(R.id.listview);
-                // Removes invalid facts from facts
-                facts.RemoveInvalidFacts();
-                // Sets MainActivity title to facts title
-                setTitle(facts.getTitle());
-                // Pass the results into ListViewAdapter.java
-                adapter = new ListViewAdapter(MainActivity.this, facts);
-                // Set the adapter to the ListView
-                listview.setAdapter(adapter);
-                // Locates the swipe_refresh_layout in activity_main.xml
-                swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
-                // Creates setOnRefreshListener event listener for swipeRefreshLayout
-                swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            // Locates the listview in activity_main.xml
+            listview = (ListView) findViewById(R.id.listview);
+            // Removes invalid facts from facts
+            facts.RemoveInvalidFacts();
+            // Sets MainActivity title to facts title
+            setTitle(facts.getTitle());
+            // Pass the results into ListViewAdapter.java
+            adapter = new ListViewAdapter(MainActivity.this, facts);
+            // Set the adapter to the ListView
+            listview.setAdapter(adapter);
+            // Locates the swipe_refresh_layout in activity_main.xml
+            swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
+            // Creates setOnRefreshListener event listener for swipeRefreshLayout
+            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
 
                     // Downloads JSON from URL_SERVER again and resets the listview adapter with the
                     // new object after a swipe refresh event
@@ -161,19 +149,22 @@ public class MainActivity extends ActionBarActivity {
                             @Override
                             public void run() {
                                 executorService = Executors.newFixedThreadPool(5);
-                                executorService.submit(new RedownloadJSON());
+                                // Runs ReloadJSON in a new thread
+                                executorService.submit(new ReloadJSON());
+                                // Pass the results into ListViewAdapter.java
                                 adapter = new ListViewAdapter(MainActivity.this, facts);
+                                // Set the adapter to the ListView
                                 listview.setAdapter(adapter);
+                                // turns off the refreshing notification in the view
                                 swipeRefreshLayout.setRefreshing(false);
                             }
                         }, 2000);
-                    }
+                }
                 });
-            }
         }
 
-        // Used to redownload JSON file in a new thread
-        class RedownloadJSON implements Runnable {
+        // Used to reload JSON file in a new thread
+        class ReloadJSON implements Runnable {
 
             @Override
             public void run() {

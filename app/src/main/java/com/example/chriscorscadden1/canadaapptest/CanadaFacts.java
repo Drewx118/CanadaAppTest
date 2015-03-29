@@ -2,14 +2,11 @@ package com.example.chriscorscadden1.canadaapptest;
 
 import java.util.ArrayList;
 
-/**
- * Created by chriscorscadden1 on 25/03/2015.
- */
-
-
 public class CanadaFacts {
 
+    // title store the title for the activity bar
     private String title;
+    // rows stores the facts to be loaded into the listview items
     private ArrayList<Fact> rows;
 
     public CanadaFacts(){
