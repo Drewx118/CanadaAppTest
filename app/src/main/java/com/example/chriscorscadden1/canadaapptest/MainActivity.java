@@ -163,7 +163,7 @@ public class MainActivity extends ActionBarActivity {
                 });
         }
 
-        // Used to reload JSON file in a new thread
+        // Used to reload JSON file
         class ReloadJSON implements Runnable {
 
             @Override

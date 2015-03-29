@@ -64,6 +64,7 @@ public class ImageLoader {
     private void queuePhoto(String url, ImageView imageView) {
         // Creates a new PhotoToLoad object
         PhotoToLoad p = new PhotoToLoad(url, imageView);
+        // Runs PhotosLoader in a new thread
         executorService.submit(new PhotosLoader(p));
     }
 
@@ -165,7 +166,7 @@ public class ImageLoader {
         }
     }
 
-    // Photosloader class that runs in the UI thread for each item
+    // Photosloader class that runs a thread for each item
     class PhotosLoader implements Runnable {
         // Photo that will be loaded
         PhotoToLoad photoToLoad;
